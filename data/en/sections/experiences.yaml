@@ -1,0 +1,28 @@
+# section information
+section:
+  name: Experiences
+  id: experiences
+  enable: true
+  weight: 3
+  showOnNavbar: true
+  # Can optionally hide the title in sections
+  # hideTitle: true 
+
+# Your experiences
+experiences:
+- company:
+    name: Nexuzhealth
+    url: "https://www.nexuzhealth.be/en"
+    location: UZ Leuven
+    # company overview
+    overview: Nexuzhealth is a medical partnership involving a number of hospitals in Flanders, which allows for patient records to be shared with everyone providing health care to you in those hospitals.
+  positions:
+  - designation: Technical Software Engineer
+    start: September 2019
+    # don't provide end date if you are currently working there. It will be replaced by "Present"
+    # end: Dec 2020
+    # give some points about what was your responsibilities at the company.
+    responsibilities:
+    - Design and development of the main electronic patient record in use in Flanders, Belgium
+    - Focus on e-prescription, e-attestation, logistics and medication in general
+    - Main programming languages are Java and Go

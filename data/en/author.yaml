@@ -1,0 +1,15 @@
+# some information about you
+name: "Kristof Achten"
+nickname: "Kristof"
+# greeting message before your name. it will default to "Hi! I am" if not provided
+greeting: "Hi, my name is"
+image: "images/author/me.png"
+# give your some contact information. they will be used in the footer
+contactInfo:
+  email: "kristofachten@gmail.com"
+
+# some summary about what you do
+summary:
+  - I am a JAVA Developer
+  - I love to code
+  - I'd like to get to know you

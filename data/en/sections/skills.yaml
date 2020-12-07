@@ -1,0 +1,61 @@
+# section information
+section:
+  name: About
+  id: about
+  enable: true
+  weight: 1
+  showOnNavbar: true
+  template: sections/about.html
+
+# your designation
+designation: Technical Software Engineer
+# your company information
+company:
+  name: Nexuzhealth/UZ Leuven.
+  url: "https://www.nexuzhealth.be/en"
+
+# your resume. this file path should be relative to you "static" directory
+# resume: "files/resume.pdf"
+
+# a summary about you
+summary: 'I am an ambitious computer scientist that graduated in 2019, currently taking up the exciting challenge of being a technical software engineer at UZLeuven/nexuzealth, specifically for anything in the electronic medication-, attestation- and prescription domain.
+
+
+Hit me up on the following platforms'
+
+# your social links
+# give as many as you want. use font-awesome for the icons.
+socialLinks:
+- name: Github
+  icon: "fab fa-github"
+  url: "https://www.github.com/kristofachten"
+- name: Linkedin
+  icon: "fab fa-linkedin"
+  url: "https://www.linkedin.com/in/kristofachten/"
+- name: Twitter
+  icon: "fab fa-twitter"
+  url: "https://twitter.com/KristofAchten"
+
+# your soft skills
+# give the percentage between 50 to 100 with 5 intervals.
+# currently supported colors: blue, yellow, pink, green, sky, orange
+softSkills:
+- name: Tech Savvy
+  percentage: 100
+  color: pink
+- name: Independent
+  percentage: 95
+  color: blue
+- name: Communicator
+  percentage: 90
+  color: yellow
+- name: Critical Thinker
+  percentage: 90
+  color: sky
+- name: Positive Attitude
+  percentage: 100
+  color: orange
+- name: Team Player
+  percentage: 95
+  color: green
+

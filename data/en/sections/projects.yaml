@@ -1,0 +1,61 @@
+# section information
+section:
+  name: Projects
+  id: projects
+  enable: true
+  weight: 4
+  showOnNavbar: true
+  # Can optionally hide the title in sections
+  # hideTitle: true
+
+# filter buttons
+buttons:
+- name: All
+  filter: "all"
+- name: Academic
+  filter: "academic"
+- name: Hobby
+  filter: "hobby"
+
+# your projects
+projects:
+- name: Formal Software Verification
+  logo: /images/sections/projects/C.png
+  role: Contributor
+  timeline: "September 2018 - June 2019"
+  repo: https://github.com/KristofAchten/thesis_final
+  summary: A case study in formal verification of a C program using the [VeriFast program verifier](https://github.com/verifast/verifast).
+  tags: ["academic", "verifast", "formal software verification", "c"]
+
+- name: Advent of Code SlackBot
+  logo: /images/sections/projects/slack.png
+  role: Developer
+  timeline: "November 2020 - Present"
+  repo: https://github.com/KristofAchten/advent-of-code-slackbot
+  #url: ""
+  summary: An Open Source bot that pulls private leaderboard data from the [Advent of Code](https://adventofcode.com/) website, processes it, and posts it to Slack.
+  tags: ["hobby", "slack", "advent of code"]
+
+- name: Advent of Code 2019 in Golang
+  logo: /images/sections/projects/go.png
+  role: Developer
+  timeline: "December 2019"
+  repo: https://github.com/KristofAchten/AoC2019
+  summary: A solution to all the 2019 [Advent of Code](https://adventofcode.com/) challenges in Golang.
+  tags: ["hobby", "go", "golang", "advent of code"]
+
+- name: Advent of Code 2020 in Kotlin
+  logo: /images/sections/projects/kotlin.png
+  role: Developer
+  timeline: "December 2020"
+  repo: https://github.com/KristofAchten/AoC2020
+  summary: A throw to solve the 2020 [Advent of Code](https://adventofcode.com/) challenges in Kotlin.
+  tags: ["hobby", "kotlin", "advent of code"]
+  
+- name: Discord PennyBot
+  logo: /images/sections/projects/discord.png
+  role: Developer
+  timeline: "December 2020"
+  repo: https://github.com/KristofAchten/discord-pennybot
+  summary: A simple [Discord](https://discord.com/)-bot written in JavaScript that is able to perform simple tasks such as posting to a Slack webhook.
+  tags: ["hobby", "discord", "javascript"]

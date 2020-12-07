@@ -1,0 +1,38 @@
+# section information
+section:
+  name: Skills
+  id: skills
+  enable: true
+  weight: 2
+  showOnNavbar: true
+  # Can optionally hide the title in sections
+  # hideTitle: true
+
+# Your Skills.
+# Give a summary of you each skill in the summary section.
+skills:
+- name: Java
+  icon: "/images/sections/skills/java.png"
+  summary: "This is the language that I work with on a daily basis, and have the most experience with. Capable of writing scalable, testable and maintainable code."
+  url: "https://www.java.com/"
+
+- name: Go
+  icon: "/images/sections/skills/go.png"
+  summary: "This is the second most important language in my professional career."
+  url: "https://golang.org/"
+  
+- name: Python
+  icon: "/images/sections/skills/python.png"
+  summary: "In my academic career, python was my go to language. No professional experience with it, but I sure do know how to use it effectively."
+  url: "https://www.python.org/"
+  
+- name: C
+  icon: "/images/sections/skills/C.png"
+  summary: "For my master's thesis, I specialized in formal verification of software. C was the programming language in which I performed my case study. Given its explicit memory management options, it was the ideal candidate with respect to formal verification."
+  url: "https://www.iso.org/standard/74528.html"
+  
+- name: TeX
+  icon: "/images/sections/skills/tex.png"
+  summary: "As a nice side effect of my academic career, I am fluent in LaTeX as well as most of its document classes such as Beamer."
+  url: "https://www.latex-project.org/"
+  
