@@ -1,0 +1,99 @@
+<!doctype html><html><head><title>Day 8: Halting</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="ie=edge"><link rel=stylesheet href=/assets/css/bootstrap.min.css><link rel=stylesheet href=/assets/css/layouts/main.css><link rel=stylesheet href=/assets/css/style.css><link rel=stylesheet href=/assets/css/navigators/navbar.css><link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel=stylesheet><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css><link rel=icon type=image/png href=/assets/images/favicon.png><link rel=stylesheet href=/assets/css/style.css><meta name=description content="Day 8 of AoC 2020"><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css><link rel=stylesheet href=/assets/css/layouts/single.css><link rel=stylesheet href=/assets/css/navigators/sidebar.css></head><body data-spy=scroll data-target=#TableOfContents data-offset=80><div class="container-fluid bg-dimmed wrapper"><nav class="navbar navbar-expand-xl top-navbar final-navbar shadow"><div class=container><button class="navbar-toggler navbar-light" id=sidebar-toggler type=button onclick=toggleSidebar()>
+<span class=navbar-toggler-icon></span></button>
+<a class=navbar-brand href=/><img src=/assets/images/main-logo.png>Kristof Achten | Portfolio & Blog</a>
+<button class="navbar-toggler navbar-light" id=toc-toggler type=button onclick=toggleTOC()>
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse lang-selector" id=top-nav-items><ul class="navbar-nav ml-auto"></ul></div></div><img src=/assets/images/main-logo.png class=d-none id=main-logo>
+<img src=/assets/images/inverted-logo.png class=d-none id=inverted-logo></nav><section class=sidebar-section id=sidebar-section><div class=sidebar-holder><div class=sidebar id=sidebar><input type=text placeholder=Search data-search id=search-box><div class=sidebar-tree><ul class=tree id=tree><li id=list-heading><a href=/posts data-filter=all>Posts</a></li><div class=subtree><li><i class="fas fa-minus-circle"></i><a class=active href>Advent of Code 2020</a><ul class=active><li><a href=/posts/advent-of-code-2020/day1/>Day 1</a></li><li><a href=/posts/advent-of-code-2020/day2/>Day 2</a></li><li><a href=/posts/advent-of-code-2020/day3/>Day 3</a></li><li><a href=/posts/advent-of-code-2020/day4/>Day 4</a></li><li><a href=/posts/advent-of-code-2020/day5/>Day 5</a></li><li><a href=/posts/advent-of-code-2020/day6/>Day 6</a></li><li><a href=/posts/advent-of-code-2020/day7/>Day 7</a></li><li><a class=active href=/posts/advent-of-code-2020/day8/>Day 8</a></li></ul></li></div></ul></div></div></div></section><section class=content-section id=content-section><div class=content><div class="container p-0 read-area"><div class="hero-area col-sm-12" id=hero-area style=background-image:url(https://kristofachten.github.io/posts/Advent%20of%20Code%202020/aoc.jpeg)></div><div class=page-content><div class="author-profile ml-auto align-self-lg-center"><img class=rounded-circle src=/images/author/me.png><h5 class=author-name>Kristof Achten</h5><p>December 8, 2020</p></div><div class=title><h1>Day 8: Halting</h1></div><div class=post-content id=post-content><h2 id=intro>Intro</h2><p><a href=https://esolangs.org/wiki/Intcode>IntCode vibes intesify&mldr;</a> Today we&rsquo;re dealing with a simple programming language (INSIDE a programming language). There are only 3 instructions:</p><ul><li><code>acc</code>: increases or decreases a global accumulator value</li><li><code>jmp</code>: jumps to a given instruction (relative to itself)</li><li><code>nop</code>: does nothing, is a no-op.</li></ul><p>As an example, a program could look something like this:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin>nop +<span style=color:#ae81ff>0</span>
+acc +<span style=color:#ae81ff>1</span>
+jmp +<span style=color:#ae81ff>4</span>
+acc +<span style=color:#ae81ff>3</span>
+jmp -<span style=color:#ae81ff>3</span>
+acc -<span style=color:#ae81ff>99</span>
+acc +<span style=color:#ae81ff>1</span>
+jmp -<span style=color:#ae81ff>4</span>
+acc +<span style=color:#ae81ff>6</span>
+</code></pre></div><h2 id=solution>Solution</h2><p>We start by parsing our input. Essentially, each program consists of multiple instructions, and each instruction consists of an operation (&lsquo;acc&rsquo;, &lsquo;nop&rsquo; or &lsquo;jmp) and an argument. I decided to define my own data class for instructions:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>data</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Instruction</span>(<span style=color:#66d9ef>var</span> operation: String, <span style=color:#66d9ef>val</span> argument: Int, <span style=color:#66d9ef>var</span> ran: Boolean)
+</code></pre></div><p>As you can see, an Instruction-instance also consists of a boolean value called <code>ran</code>. This will be used later on in the challenges to determine if an instruction has been ran before, and thus indicates the fact that there is a loop in the program.</p><p>We simply parse the input by splitting it up into its different lines, and mapping each such line to an <code>Instruction</code>-instance, storing all of these instances in a global list <code>runList</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>val</span> runList = rawInput.split(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>).map { Instruction(<span style=color:#66d9ef>it</span>.split(<span style=color:#e6db74>&#39; &#39;</span>)[<span style=color:#ae81ff>0</span>], <span style=color:#66d9ef>it</span>.split(<span style=color:#e6db74>&#39; &#39;</span>)[<span style=color:#ae81ff>1</span>].toInt(), <span style=color:#66d9ef>false</span>) }.toList()
+</code></pre></div><h3 id=part-1>Part 1</h3><p>For part one, the challenge is to determine what the value is of the global accumulator variable just before we run an instruction twice. The function I&rsquo;ve written for this is pretty straightforward, so I&rsquo;m not going to discuss it in depth, but instead enriched my code with commentary where necessary.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>private</span> <span style=color:#66d9ef>fun</span> <span style=color:#a6e22e>runProgram</span>(): Int {
+	<span style=color:#66d9ef>var</span> acc = <span style=color:#ae81ff>0</span> <span style=color:#75715e>// This is the global accumulator variable
+</span><span style=color:#75715e></span>	<span style=color:#66d9ef>var</span> ctr = <span style=color:#ae81ff>0</span> <span style=color:#75715e>// This is the program pointer, which indicates which instruction we&#39;re running in the runList
+</span><span style=color:#75715e></span>
+	<span style=color:#66d9ef>while</span> (<span style=color:#66d9ef>true</span>) {
+		<span style=color:#75715e>// Load in the instruction
+</span><span style=color:#75715e></span>		<span style=color:#66d9ef>val</span> instruction = runList.<span style=color:#66d9ef>get</span>(ctr)
+		
+		<span style=color:#75715e>// If the loaded instruction has already executed once, terminate and return acc
+</span><span style=color:#75715e></span>		<span style=color:#66d9ef>if</span> (instruction.ran) {
+			<span style=color:#66d9ef>return</span> acc
+		}
+		
+		<span style=color:#75715e>// Do something based on the operation and argument within the instruction
+</span><span style=color:#75715e></span>		<span style=color:#66d9ef>when</span> (instruction.operation) {
+			<span style=color:#e6db74>&#34;acc&#34;</span> <span style=color:#f92672>-&gt;</span> {
+				acc <span style=color:#f92672>+=</span> instruction.argument; ctr<span style=color:#f92672>++</span>
+			}
+			<span style=color:#e6db74>&#34;jmp&#34;</span> <span style=color:#f92672>-&gt;</span> ctr <span style=color:#f92672>+=</span> instruction.argument;
+			<span style=color:#e6db74>&#34;nop&#34;</span> <span style=color:#f92672>-&gt;</span> ctr<span style=color:#f92672>++</span>
+		}
+		
+		<span style=color:#75715e>// Set the ran-value to indicate that this instruction has been ran
+</span><span style=color:#75715e></span>		instruction.ran = <span style=color:#66d9ef>true</span>
+	}
+}
+</code></pre></div><p>Solving challenge one simply comes down to running the following code:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>override</span> <span style=color:#66d9ef>fun</span> <span style=color:#a6e22e>part1</span>() = runProgram().toString()
+</code></pre></div><h3 id=part-2>Part 2</h3><p>In part two, we&rsquo;re told that switching around one &lsquo;jmp&rsquo; instruction with a &lsquo;nop&rsquo; instruction or vice versa, will result in a terminating program. The question: what is the value of the accumulator once it does terminate?</p><p>To start of, let&rsquo;s refactor our solution for part one so that it can be used for part two. Since we&rsquo;re now no longer only terminating when a loop is detected, we&rsquo;ll need a notion of an exit-type for the function <code>runProgram()</code>. There are two such types: loop detected, and terminated succesfully. For easy referencing, I defined an enum for this:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>enum</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ReturnType</span> { LOOP, SUCCESS }
+</code></pre></div><p>Of course, we&rsquo;ll also still need to return the accumulator-value. Since kotlin does not support multiple return values (like GoLang does for example), we&rsquo;ll need to wrap this in a data class:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>data</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ProgramResult</span>(<span style=color:#66d9ef>val</span> resultType: ReturnType, <span style=color:#66d9ef>val</span> resultAcc: Int)
+</code></pre></div><p>The challenge states that a solution is terminating when it references an instruction that is out of bounds of the <code>runList</code>. We simply need to add a condition that checks this.</p><p>Combining all of this, we get the following definition for <code>runProgram()</code>:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>private</span> <span style=color:#66d9ef>fun</span> <span style=color:#a6e22e>runProgram</span>(): ProgramResult {
+	<span style=color:#66d9ef>var</span> acc = <span style=color:#ae81ff>0</span>
+	<span style=color:#66d9ef>var</span> ctr = <span style=color:#ae81ff>0</span>
+
+	<span style=color:#66d9ef>while</span> (<span style=color:#66d9ef>true</span>) {
+		<span style=color:#66d9ef>val</span> instruction = runList.<span style=color:#66d9ef>get</span>(ctr)
+		<span style=color:#66d9ef>if</span> (instruction.ran) {
+			<span style=color:#66d9ef>return</span> ProgramResult(ReturnType.LOOP, acc)
+		}
+		<span style=color:#66d9ef>when</span> (instruction.operation) {
+			<span style=color:#e6db74>&#34;acc&#34;</span> <span style=color:#f92672>-&gt;</span> {
+				acc <span style=color:#f92672>+=</span> instruction.argument; ctr<span style=color:#f92672>++</span>
+			}
+			<span style=color:#e6db74>&#34;jmp&#34;</span> <span style=color:#f92672>-&gt;</span> ctr <span style=color:#f92672>+=</span> instruction.argument;
+			<span style=color:#e6db74>&#34;nop&#34;</span> <span style=color:#f92672>-&gt;</span> ctr<span style=color:#f92672>++</span>
+		}
+
+		<span style=color:#75715e>// If we&#39;re out of bounds, terminate succesfully
+</span><span style=color:#75715e></span>		<span style=color:#66d9ef>if</span> (ctr &lt; <span style=color:#ae81ff>0</span> <span style=color:#f92672>||</span> ctr <span style=color:#f92672>&gt;=</span> runList.size) {
+			<span style=color:#66d9ef>return</span> ProgramResult(ReturnType.SUCCESS, acc)
+		}
+
+		instruction.ran = <span style=color:#66d9ef>true</span>
+	}
+}
+</code></pre></div><p>Part one can then be altered as follows:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>override</span> <span style=color:#66d9ef>fun</span> <span style=color:#a6e22e>part1</span>() = runProgram().resultAcc.toString()
+</code></pre></div><p>For part two, my code is (again) pretty straightforward: we simply loop through <code>runList</code>: if we encounter a &lsquo;jmp&rsquo;, we replace it with &lsquo;nop&rsquo; and vice versa. Then we run the program, check if it is terminating and return the accumulator value if it is. If it&rsquo;s not, we simply reset the instruction, continue through the list, remembering to reset all our <code>ran</code>-values to false (otherwise, false loops would be detected).</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>private</span> <span style=color:#66d9ef>fun</span> <span style=color:#a6e22e>resetInstructions</span>() {
+	runList.forEach { <span style=color:#66d9ef>it</span>.ran = <span style=color:#66d9ef>false</span> }
+}
+
+<span style=color:#66d9ef>private</span> <span style=color:#66d9ef>fun</span> <span style=color:#a6e22e>findTerminatingSolution</span>(): Int {
+	runList.forEach { instruction <span style=color:#f92672>-&gt;</span>
+		resetInstructions()
+
+		<span style=color:#66d9ef>var</span> oldOp = instruction.operation
+		<span style=color:#66d9ef>when</span> (oldOp) {
+			<span style=color:#e6db74>&#34;jmp&#34;</span> <span style=color:#f92672>-&gt;</span> instruction.operation = <span style=color:#e6db74>&#34;nop&#34;</span>
+			<span style=color:#e6db74>&#34;nop&#34;</span> <span style=color:#f92672>-&gt;</span> instruction.operation = <span style=color:#e6db74>&#34;jmp&#34;</span>
+		}
+
+		<span style=color:#66d9ef>val</span> result = runProgram()
+		<span style=color:#66d9ef>if</span> (result.resultType <span style=color:#f92672>==</span> ReturnType.SUCCESS) {
+			<span style=color:#66d9ef>return</span> result.resultAcc
+		}
+
+		instruction.operation = oldOp
+	}
+
+	<span style=color:#66d9ef>throw</span> IllegalStateException(<span style=color:#e6db74>&#34;Could not fix the given program so that it terminates.&#34;</span>)
+}
+</code></pre></div><p>Having these function definitions, solving part two can be done by calling <code>findTerminatingSolution()</code>:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-kotlin data-lang=kotlin><span style=color:#66d9ef>override</span> <span style=color:#66d9ef>fun</span> <span style=color:#a6e22e>part2</span>() = findTerminatingSolution().toString()
+</code></pre></div></div><div class=btn-improve-page><a href=https://github.com/hugo-toha/hugo-toha.github.io/edit/master/content/posts/Advent%20of%20Code%202020/day8.md><i class="fas fa-code-branch"></i>Improve this page</a></div><hr><div class="row next-prev-navigator"><div class="col-md-12 next-article"><a href=/posts/advent-of-code-2020/day7/ class="btn btn-outline-info"><span>Next <i class="fas fa-chevron-circle-right"></i></span><br><span>Day 7: Bags</span></a></div></div><hr></div></div></div></section><section class=toc-section id=toc-section><div class=toc-holder><h5 class="text-center pl-3">Table of Contents</h5><hr><div class=toc><nav id=TableOfContents><ul><li><a href=#intro>Intro</a></li><li><a href=#solution>Solution</a><ul><li><a href=#part-1>Part 1</a></li><li><a href=#part-2>Part 2</a></li></ul></li></ul></nav></div></div></section></div><footer class="container-fluid text-center align-content-center footer pb-2"><div class="container pt-5"><div class="row text-left"><div class="col-md-4 col-sm-12"><h5>Navigation</h5><ul><li class=nav-item><a class=smooth-scroll href=#about>About</a></li><li class=nav-item><a class=smooth-scroll href=#skills>Skills</a></li><li class=nav-item><a class=smooth-scroll href=#experiences>Experiences</a></li><li class=nav-item><a class=smooth-scroll href=#projects>Projects</a></li><li class=nav-item><a class=smooth-scroll href=#recent-posts>Recent Posts</a></li><li class=nav-item><a class=smooth-scroll href=#achievements>Achievements</a></li></ul></div><div class="col-md-4 col-sm-12"><h5>Contact me:</h5><ul><li><span>Email:</span> <span>kristofachten@gmail.com</span></li></ul></div></div></div><hr><div class=container><div class="row text-left"><div class=col-md-4><a id=theme href=https://github.com/hossainemruz/toha target=#><img src=/assets/images/inverted-logo.png>
+Toha</a></div><div class="col-md-4 text-center">divyak © 2020 Copyright.</div><div class="col-md-4 text-right"><a id=hugo href=https://gohugo.io/>Powered by
+<img src=/assets/images/hugo-logo-wide.svg alt="Hugo Logo" height=18></a></div></div></div></footer><script src=/assets/js/jquery-3.4.1.min.js></script><script src=/assets/js/popper.min.js></script><script src=/assets/js/bootstrap.min.js></script><script src=/assets/js/navbar.js></script><script src=/assets/js/main.js></script><script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js></script><script src=/assets/js/single.js></script><script>hljs.initHighlightingOnLoad();</script></body></html>
